@@ -6,6 +6,7 @@
 GET     /                                       Application.index
 GET	/submit					Application.submitGet
 POST	/submit					Application.submitPost
+GET	/submissions				Application.submitList
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

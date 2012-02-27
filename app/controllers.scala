@@ -41,4 +41,10 @@ object Application extends Controller {
 	Redirect("/")
     }
     
+    def submitList (msg : String) = {
+      val msgs = database.find("msg" $exists true $ne "")
+      val msgStrings = msgs.map ( (obj : DBObject ) => obj.getOrElse("msg","") )
+      html.submissions("List of submissions",msgStrings.toSeq)
+
+    }
 }
