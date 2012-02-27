@@ -1,0 +1,7 @@
+@(title:String, msgs:Seq[AnyRef])
+
+@main(title) {
+<ul>
+  @msgs.map{ msg => <li>@msg</li> }
+</ul>   
+}
