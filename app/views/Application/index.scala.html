@@ -1,8 +1,15 @@
-@(title:String, msgs:Seq[AnyRef])
+@(title:String, msg:models.DubStepJoke)
 
 @main(title) {
 <h2>@title</h2>
-<h1>@msgs</h1>
+<h1>@msg.msg</h1>
+<p><a href="/vote/up/@msg.id">Vote up</a></p>
+<p><a href="/vote/down/@msg.id">Vote down</a></p>
+<img id="image" />
+<p id="name"></p>
 
+<fb:login-button on-login="window.location='/'">Login with Facebook</fb:login-button>
+<a href="#" onclick="FB.logout(function(){window.location='/'})">Logout</a>
+      
 <a href="/submit">Add your own</a>
 }

@@ -4,6 +4,7 @@ import play._
 import play.mvc._
 import com.mongodb.casbah.Imports._
 import util.Properties
+import models._
 
 object Application extends Controller {
     
@@ -21,14 +22,17 @@ object Application extends Controller {
     val database = _mongoConn(mongoUri.database)("dubstep")
     
     def index = {
-//      Text(Properties.envOrElse("MONGOLAB_URI", "mongodb://127.0.0.1:27017/test") + "\n" + mongoUri.username + "\n" + mongoUri.hosts(0).toInt + "\n" + new String(mongoUri.database))
-
       val count : Int = database.count.asInstanceOf[Int]
       val randGen = new scala.util.Random
       val rand = if (count > 0) randGen.nextInt(count); else 0;
       val msgs = database.find("msg" $exists true $ne "").limit(1).skip(rand)
-      val msgStrings = msgs.map ( (obj : DBObject ) => obj.getOrElse("msg","") )
-      html.index("What does dubstep sound like?",msgStrings.toSeq)
+      val msgStrings : Iterator[DubStepJoke] = msgs.map ( (obj : DBObject ) => DubStepJoke(obj.getOrElse("msg",""),obj.getOrElse("_id","none")))
+      html.index("What does dubstep sound like?",msgStrings.toSeq(0))
+    }
+    
+    def vote (direction : String, id : String) = {
+      val msg = database.findOne(MongoDBObject("_id" -> new ObjectId(id)))
+      database.update(MongoDBObject("_id" -> new ObjectId(id)),$inc("votes" -> 1))
     }
     
     def submitGet = {
@@ -36,7 +40,7 @@ object Application extends Controller {
     }
     
     def submitPost (msg : String) = {
-	val doc = MongoDBObject("msg" -> msg, "random" -> Math.random)
+	val doc = MongoDBObject("msg" -> msg, "votes" -> 0, "voters" -> List())
 	database.save( doc )
 	Redirect("/")
     }

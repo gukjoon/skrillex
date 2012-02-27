@@ -6,8 +6,33 @@
         <title>@title</title>
         <link rel="stylesheet" media="screen" href="@asset("public/stylesheets/main.css")">
         <link rel="shortcut icon" type="image/png" href="@asset("public/images/favicon.png")">
-        <script src="@asset("public/javascripts/jquery-1.6.4.min.js")" type="text/javascript"></script>
-    </head>
+        <script src="@asset("public/javascripts/jquery-1.6.4.min.js")"
+type="text/javascript"></script>
+
+      <div id="fb-root"></div>
+      <script src="http://connect.facebook.net/en_US/all.js"></script>
+      <script>
+      $(document).ready(function(){
+      FB.init({
+      appId      : '259371647475278',
+      status     : true, 
+      cookie     : true,
+      xfbml      : true,
+      oauth      : true,
+      });
+      
+      FB.api('/me', function(user) {
+      if(user != null) {
+      console.log(user);
+      $("#name").val(user.name);
+      }
+      else{
+      console.log("shit is down");
+      }
+      })
+      });
+      </script>
+   </head>
     <body>
         @body
     </body>
