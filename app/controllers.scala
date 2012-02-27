@@ -8,7 +8,7 @@ object Application extends Controller {
     
     import views.Application._
     
-    val _mongoConn = MongoConnection()
+    val _mongoConn = MongoConnection("ds031087.mongolab.com",31087)
     
     def index = {
 	val database = _mongoConn("test")("dubstep")
