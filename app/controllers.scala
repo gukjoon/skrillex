@@ -9,7 +9,7 @@ object Application extends Controller {
     
     import views.Application._
     
-    private val mongoUri = new MongoURI(new com.mongodb.MongoURI(Properties.envOrElse("MONGOLAB_URI", "mongodb://127.0.0.1:27017/heroku_app3056061")))
+    private val mongoUri = new MongoURI(new com.mongodb.MongoURI(Properties.envOrElse("MONGOLAB_URI", "mongodb://127.0.0.1:27017/test")))
     //val _mongoConn = MongoConnection(new String(mongoUri.password),mongoUri.hosts(0).toInt)
     val _mongoConn = MongoConnection("ds031087.mongolab.com",31087)
   
@@ -18,10 +18,11 @@ object Application extends Controller {
     val password = credsSplit(1)
     if (password != null)
       _mongoConn("heroku_app3056061").authenticate(username,password)
-    val database = _mongoConn("heroku_app3056061")("dubstep")
+    val database = _mongoConn(mongoUri.database)("dubstep")
     
     def index = {
-      //Text(Properties.envOrElse("MONGOLAB_URI", "mongodb://127.0.0.1:27017/test") + "\n" + mongoUri.username + "\n" + mongoUri.hosts(0).toInt + "\n" + new String(mongoUri.password))
+//      Text(Properties.envOrElse("MONGOLAB_URI", "mongodb://127.0.0.1:27017/test") + "\n" + mongoUri.username + "\n" + mongoUri.hosts(0).toInt + "\n" + new String(mongoUri.database))
+
       val count : Int = database.count.asInstanceOf[Int]
       val randGen = new scala.util.Random
       val rand = if (count > 0) randGen.nextInt(count); else 0;
