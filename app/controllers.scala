@@ -13,6 +13,8 @@ object Application extends Controller {
     val _mongoConn = MongoConnection(mongoUri)
     
     def index = {
+	Text(mongoUri)
+	/*
 	if (mongoUri.password == null || _mongoConn("test").authenticate(mongoUri.username,mongoUri.password.asInstanceOf[String])){
 	  val database = _mongoConn("test")("dubstep")
 	  val count : Int = database.count.asInstanceOf[Int]
@@ -24,7 +26,7 @@ object Application extends Controller {
 	}
 	else {
 	  html.index("What does dubstep sound like?",List("404 errors"))
-	}
+	}*/
     }
     
     def submitGet = {
