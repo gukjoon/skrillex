@@ -3,12 +3,15 @@ package controllers
 import play._
 import play.mvc._
 import com.mongodb.casbah.Imports._
+import util.Properties
+import com.mongodb.MongoURI
 
 object Application extends Controller {
     
     import views.Application._
     
-    val _mongoConn = MongoConnection("ds031087.mongolab.com",31087)
+    private val mongoUri = new MongoURI(Properties.envOrElse("MONGOLAB_URI", "mongodb://127.0.0.1:27017"))
+    val _mongoConn = MongoConnection(mongoUri)
     
     def index = {
 	val database = _mongoConn("test")("dubstep")
