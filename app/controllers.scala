@@ -11,18 +11,22 @@ object Application extends Controller {
     val _mongoConn = MongoConnection()
     
     def index = {
-	val msgs = _mongoConn("test")("test_data").find( "msg" $exists true $ne "" )
-	val msgStrings = msgs.map( (obj: DBObject) => obj.getOrElse("msg","") )
-	html.index("test",msgStrings.toSeq)
+	val database = _mongoConn("test")("dubstep")
+	val count : Int = database.count.asInstanceOf[Int]
+	val randGen = new scala.util.Random
+	val rand = randGen.nextInt(count)
+	val msgs = database.find("msg" $exists true $ne "").limit(1).skip(rand)
+	val msgStrings = msgs.map ( (obj : DBObject ) => obj.getOrElse("msg","") )
+	html.index("What does dubstep sound like?",msgStrings.toSeq)
     }
     
     def submitGet = {
-	html.submit(
+	html.submit("")
     }
     
     def submitPost (msg : String) = {
-	val doc = MongoDBObject("msg" -> msg)
-	_mongoConn("test")("test_data").save( doc )
+	val doc = MongoDBObject("msg" -> msg, "random" -> Math.random)
+	_mongoConn("test")("dubstep").save( doc )
 	Redirect("/")
     }
     
