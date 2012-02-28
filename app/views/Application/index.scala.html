@@ -3,16 +3,15 @@
 @main(title) {
 <h2>@title</h2>
 <h1>@msg.msg</h1>
-<p><a href="/vote/up/@msg.id">Vote up</a></p>
-<p><a href="/vote/down/@msg.id">Vote down</a></p>
-<img id="image" />
-
 @if(fb_user == null) {
 <fb:login-button on-login="/login">Login with Facebook</fb:login-button>
 } else {
+<p>Votes: @msg.votes</p>
 <p id="name">@fb_user</p>
 <a href="#" onclick="FB.logout(function(){window.location='/'})">Logout</a>
 <a href="/submit">Add your own</a>
+<p><a href="/vote/up/@msg.id?fb_id=@fb_user">Vote up</a></p>
+<p><a href="/vote/down/@msg.id?fb_id=@fb_user">Vote down</a></p>
 }
 
 }

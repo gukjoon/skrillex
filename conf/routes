@@ -6,7 +6,8 @@
 GET     /                                       Application.index
 GET	/submit					Application.submitGet
 POST	/submit					Application.submitPost
-GET	/submissions				Application.submitList
+GET	/submission				Application.submitList
+GET	/submission/{item}			Application.getItem(item)
 GET	/login					Application.login
 GET	/vote/{direction}/{id}			Application.vote(direction,id)
 

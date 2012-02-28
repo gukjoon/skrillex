@@ -27,7 +27,7 @@ object Application extends Controller {
     def index = {
       var fb_user : String = null
       try {
-	fb_user = FbGraph.getObject("me").get("username").getAsString
+	fb_user = FbGraph.getObject("me").get("id").getAsString
       }
       catch{
 	case e : Exception  => fb_user = null
@@ -36,7 +36,7 @@ object Application extends Controller {
       val randGen = new scala.util.Random
       val rand = if (count > 0) randGen.nextInt(count); else 0;
       val msgs = database.find("msg" $exists true $ne "").limit(1).skip(rand)
-      val msgStrings : Iterator[DubStepJoke] = msgs.map ( (obj : DBObject ) => DubStepJoke(obj.getOrElse("msg",""),obj.getOrElse("_id","none")))
+      val msgStrings : Iterator[DubStepJoke] = msgs.map ( (obj : DBObject ) => DubStepJoke(obj.getOrElse("msg",""),obj.getOrElse("_id","none"),obj.getOrElse("votes","0")))
       
       html.index("What does dubstep sound like?",msgStrings.toSeq(0),fb_user)
     }
@@ -46,8 +46,21 @@ object Application extends Controller {
     }
     
     def vote (direction : String, id : String) = {
+      var fb_user : String = null
+      try {
+	fb_user = FbGraph.getObject("me").get("id").getAsString
+      }
+      catch{
+	case e : Exception  => fb_user = null
+      }
+      
       val msg = database.findOne(MongoDBObject("_id" -> new ObjectId(id)))
-      database.update(MongoDBObject("_id" -> new ObjectId(id)),$inc("votes" -> 1))
+      val query = MongoDBObject ("_id" -> new ObjectId(id),"voters" -> MongoDBObject("$ne" -> fb_user))
+      val update = MongoDBObject("$inc" -> MongoDBObject("votes" -> 1), "$push" -> MongoDBObject("voters" -> fb_user))
+      database.update(query,update)
+      Redirect("/submission/" + id)
+      //TODO: add response
+      //TODO: no facebook user fail
     }
     
     def submitGet = {
@@ -56,14 +69,30 @@ object Application extends Controller {
     
     def submitPost (msg : String) = {
 	val doc = MongoDBObject("msg" -> msg, "votes" -> 0, "voters" -> List())
-	database.save( doc )
-	Redirect("/")
+	database.save(doc)
+	val newid = doc.getOrElse("_id","")
+	Redirect("/submission/" + newid)
+	//TODO: no facebook user fail
     }
     
     def submitList (msg : String) = {
       val msgs = database.find("msg" $exists true $ne "")
       val msgStrings = msgs.map ( (obj : DBObject ) => obj.getOrElse("msg","") )
       html.submissions("List of submissions",msgStrings.toSeq)
-
     }
+    
+    def getItem (item : String) = {
+      //TODO: error if not exist
+      var fb_user : String = null
+      try {
+	fb_user = FbGraph.getObject("me").get("id").getAsString
+      }
+      catch{
+	case e : Exception  => fb_user = null
+      }
+      
+      val msgs = database.find(MongoDBObject("_id" -> new ObjectId(item))).limit(1)
+      val msgStrings : Iterator[DubStepJoke] = msgs.map ( (obj : DBObject ) => DubStepJoke(obj.getOrElse("msg",""),obj.getOrElse("_id","none"),obj.getOrElse("votes","0")))
+      html.index("What does dubstep sound like?", msgStrings.toSeq(0),fb_user)
+    }    
 }
