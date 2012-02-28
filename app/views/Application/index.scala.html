@@ -1,4 +1,4 @@
-@(title:String, msg:models.DubStepJoke)
+@(title:String, msg:models.DubStepJoke, fb_user : String)
 
 @main(title) {
 <h2>@title</h2>
@@ -6,9 +6,9 @@
 <p><a href="/vote/up/@msg.id">Vote up</a></p>
 <p><a href="/vote/down/@msg.id">Vote down</a></p>
 <img id="image" />
-<p id="name"></p>
+<p id="name">@fb_user</p>
 
-<fb:login-button>Login with Facebook</fb:login-button>
+<fb:login-button on-login="/">Login with Facebook</fb:login-button>
 <a href="#" onclick="FB.logout(function(){window.location='/'})">Logout</a>
       
 <a href="/submit">Add your own</a>

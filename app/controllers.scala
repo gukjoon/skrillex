@@ -6,6 +6,9 @@ import com.mongodb.casbah.Imports._
 import util.Properties
 import models._
 
+import com.google.gson.JsonObject
+import play.modules.facebook.FbGraph
+
 object Application extends Controller {
     
     import views.Application._
@@ -22,12 +25,15 @@ object Application extends Controller {
     val database = _mongoConn(mongoUri.database)("dubstep")
     
     def index = {
+      val fb_user : String = FbGraph.getObject("me").get("username").getAsString;
+      
       val count : Int = database.count.asInstanceOf[Int]
       val randGen = new scala.util.Random
       val rand = if (count > 0) randGen.nextInt(count); else 0;
       val msgs = database.find("msg" $exists true $ne "").limit(1).skip(rand)
       val msgStrings : Iterator[DubStepJoke] = msgs.map ( (obj : DBObject ) => DubStepJoke(obj.getOrElse("msg",""),obj.getOrElse("_id","none")))
-      html.index("What does dubstep sound like?",msgStrings.toSeq(0))
+      
+      html.index("What does dubstep sound like?",msgStrings.toSeq(0),fb_user)
     }
     
     def vote (direction : String, id : String) = {

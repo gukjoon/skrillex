@@ -3,6 +3,8 @@
 require:
     - play
     - play -> scala 0.9.1
+    - play -> fbgraph 0.4
+      transitive : false
     - com.mongodb.casbah -> casbah_2.8.1 2.1.2
 
 
