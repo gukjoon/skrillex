@@ -27,7 +27,7 @@ type="text/javascript"></script>
       <script>
       $(document).ready(function(){
       FB.init({
-      appId      : '259371647475278',
+      appId      : @(play.Play.configuration.get("fbg.appId")),
       status     : true, 
       cookie     : true,
       xfbml      : true,
