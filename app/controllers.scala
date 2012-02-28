@@ -25,8 +25,13 @@ object Application extends Controller {
     val database = _mongoConn(mongoUri.database)("dubstep")
     
     def index = {
-      val fb_user : String = FbGraph.getObject("me").get("username").getAsString;
-      
+      var fb_user : String = null
+      try {
+	fb_user = FbGraph.getObject("me").get("username").getAsString
+      }
+      catch{
+	case e : Exception  => fb_user = null
+      }
       val count : Int = database.count.asInstanceOf[Int]
       val randGen = new scala.util.Random
       val rand = if (count > 0) randGen.nextInt(count); else 0;
@@ -34,6 +39,10 @@ object Application extends Controller {
       val msgStrings : Iterator[DubStepJoke] = msgs.map ( (obj : DBObject ) => DubStepJoke(obj.getOrElse("msg",""),obj.getOrElse("_id","none")))
       
       html.index("What does dubstep sound like?",msgStrings.toSeq(0),fb_user)
+    }
+    
+    def login = {
+      Redirect("/")
     }
     
     def vote (direction : String, id : String) = {
