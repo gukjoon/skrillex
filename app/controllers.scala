@@ -14,8 +14,8 @@ object Application extends Controller {
     import views.Application._
     
     private val mongoUri = new MongoURI(new com.mongodb.MongoURI(Properties.envOrElse("MONGOLAB_URI", "mongodb://127.0.0.1:27017/test")))
-    //val _mongoConn = MongoConnection(new String(mongoUri.password),mongoUri.hosts(0).toInt)
-    val _mongoConn = MongoConnection("ds031087.mongolab.com",31087)
+    val _mongoConn = MongoConnection(new String(mongoUri.password),mongoUri.hosts(0).toInt)
+    //val _mongoConn = MongoConnection("ds031087.mongolab.com",31087)
   
     val credsSplit = mongoUri.username.split(":")
     val username = credsSplit(0)
@@ -30,8 +30,10 @@ object Application extends Controller {
 	fb_user = FbGraph.getObject("me").get("id").getAsString
       }
       catch{
-	case e : Exception  => fb_user = null
+	case e : Exception  => fb_user = "null"
       }
+      Text("Test")
+      
       val count : Int = database.count.asInstanceOf[Int]
       val randGen = new scala.util.Random
       val rand = if (count > 0) randGen.nextInt(count); else 0;
