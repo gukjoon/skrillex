@@ -4,7 +4,7 @@
 <h2>@title</h2>
 <h1>@msg.msg</h1>
 @if(fb_user == null) {
-<fb:login-button on-login="/login">Login with Facebook</fb:login-button>
+<fb:login-button>Login with Facebook</fb:login-button>
 } else {
 <p>Votes: @msg.votes</p>
 <p id="name">@fb_user</p>

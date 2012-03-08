@@ -25,6 +25,7 @@ object Application extends Controller {
     
     val database = _mongoConn(mongoUri.database)("dubstep")
     
+    
     def index = {
       var fb_user : String = null
       try {
