@@ -34,7 +34,7 @@ type="text/javascript"></script>
       oauth      : true,
       });
       
-      FB.api('/me', function(user) {
+      FB.api("\/me", function(user) {
       if(user != null) {
       console.log(user);
       $("#name").val(user.name);

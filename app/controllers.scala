@@ -14,14 +14,15 @@ object Application extends Controller {
     import views.Application._
     
     private val mongoUri = new MongoURI(new com.mongodb.MongoURI(Properties.envOrElse("MONGOLAB_URI", "mongodb://127.0.0.1:27017/test")))
-    val _mongoConn = MongoConnection(new String(mongoUri.password),mongoUri.hosts(0).toInt)
-    //val _mongoConn = MongoConnection("ds031087.mongolab.com",31087)
-  
-    val credsSplit = mongoUri.username.split(":")
-    val username = credsSplit(0)
-    val password = credsSplit(1)
-    if (password != null)
-      _mongoConn("heroku_app3056061").authenticate(username,password)
+    //MongoUri parsing is broken when passwords and usernames are in the mix ergo this nastiness
+    val Array(host : String, portStr : String) = if (mongoUri.username == null) mongoUri.hosts(0).split(":") else Array(mongoUri.password, mongoUri.hosts(0))
+    val port : Int = portStr.toInt
+    val _mongoConn = MongoConnection(host,port)
+    val (username : Option[String], password : Option[String]) = if (mongoUri.username == null) (None,None) else (mongoUri.username.split(":"))							   
+
+    if (username.isDefined && password.isDefined)
+      _mongoConn(mongoUri.database).authenticate(username.get,password.get)
+    
     val database = _mongoConn(mongoUri.database)("dubstep")
     
     def index = {
@@ -30,17 +31,21 @@ object Application extends Controller {
 	fb_user = FbGraph.getObject("me").get("id").getAsString
       }
       catch{
-	case e : Exception  => fb_user = "null"
+	case e : Exception  => fb_user = null
       }
-      Text("Test")
-      
       val count : Int = database.count.asInstanceOf[Int]
-      val randGen = new scala.util.Random
-      val rand = if (count > 0) randGen.nextInt(count); else 0;
-      val msgs = database.find("msg" $exists true $ne "").limit(1).skip(rand)
-      val msgStrings : Iterator[DubStepJoke] = msgs.map ( (obj : DBObject ) => DubStepJoke(obj.getOrElse("msg",""),obj.getOrElse("_id","none"),obj.getOrElse("votes","0")))
-      
-      html.index("What does dubstep sound like?",msgStrings.toSeq(0),fb_user)
+      if (count > 0) 
+      {
+	val randGen = new scala.util.Random
+	val rand = randGen.nextInt(count)
+	val msgs = database.find("msg" $exists true $ne "").limit(1).skip(rand)
+	val msgStrings : Iterator[DubStepJoke] = msgs.map ( (obj : DBObject ) => DubStepJoke(obj.getOrElse("msg",""),obj.getOrElse("_id","none"),obj.getOrElse("votes","0")))
+	html.index("What does dubstep sound like?",msgStrings.toSeq(0),fb_user)
+      }
+      else
+      {
+	html.empty("What does dubstep sound like?",fb_user)
+      }
     }
     
     def login = {
@@ -96,5 +101,6 @@ object Application extends Controller {
       val msgs = database.find(MongoDBObject("_id" -> new ObjectId(item))).limit(1)
       val msgStrings : Iterator[DubStepJoke] = msgs.map ( (obj : DBObject ) => DubStepJoke(obj.getOrElse("msg",""),obj.getOrElse("_id","none"),obj.getOrElse("votes","0")))
       html.index("What does dubstep sound like?", msgStrings.toSeq(0),fb_user)
-    }    
+    }
+    
 }

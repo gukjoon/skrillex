@@ -1,0 +1,14 @@
+@(title:String, fb_user : String)
+
+@main(title) {
+<h2>@title</h2>
+<h1>It sounds like... no entries in your database</h1>
+@if(fb_user == null) {
+<fb:login-button on-login="/login">Login with Facebook</fb:login-button>
+} else {
+<p id="name">@fb_user</p>
+<a href="#" onclick="FB.logout(function(){window.location='/'})">Logout</a>
+<a href="/submit">Add your own</a>
+}
+
+}
