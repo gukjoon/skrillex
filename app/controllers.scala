@@ -15,16 +15,15 @@ object Application extends Controller {
     
     private val mongoUri = new MongoURI(new com.mongodb.MongoURI(Properties.envOrElse("MONGOLAB_URI", "mongodb://127.0.0.1:27017/test")))
     //MongoUri parsing is broken when passwords and usernames are in the mix ergo this nastiness
-    val Array(host : String, portStr : String) = if (mongoUri.username == null) mongoUri.hosts(0).split(":") else Array(mongoUri.password, mongoUri.hosts(0))
+    val Array(host : String, portStr : String) = if (mongoUri.username == null) mongoUri.hosts(0).split(":") else Array(new String(mongoUri.password), mongoUri.hosts(0))
     val port : Int = portStr.toInt
     val _mongoConn = MongoConnection(host,port)
-    val (username : Option[String], password : Option[String]) = if (mongoUri.username == null) (None,None) else (mongoUri.username.split(":"))							   
+    val Array(username : Option[String], password : Option[String]) = if (mongoUri.username == null) Array(None,None) else mongoUri.username.split(":") map { value => Some(value) }
 
     if (username.isDefined && password.isDefined)
       _mongoConn(mongoUri.database).authenticate(username.get,password.get)
     
     val database = _mongoConn(mongoUri.database)("dubstep")
-    
     
     def index = {
       var fb_user : String = null
@@ -53,7 +52,8 @@ object Application extends Controller {
       Redirect("/")
     }
     
-    def vote (direction : String, id : String) = {
+    def vote (direction : String, id: String) = {
+      //TODO: implement loan pattern for facebook user
       var fb_user : String = null
       try {
 	fb_user = FbGraph.getObject("me").get("id").getAsString
@@ -62,13 +62,43 @@ object Application extends Controller {
 	case e : Exception  => fb_user = null
       }
       
+      if (fb_user != null) {
+      
+      val directionRev = if (direction == "up") "down" else "up"
+      val dirAmount = if (direction == "up") 1 else -1
       val msg = database.findOne(MongoDBObject("_id" -> new ObjectId(id)))
-      val query = MongoDBObject ("_id" -> new ObjectId(id),"voters" -> MongoDBObject("$ne" -> fb_user))
-      val update = MongoDBObject("$inc" -> MongoDBObject("votes" -> 1), "$push" -> MongoDBObject("voters" -> fb_user))
-      database.update(query,update)
-      Redirect("/submission/" + id)
+      
+      val query = MongoDBObject ("_id" -> new ObjectId(id),"voters." + fb_user -> direction)
+      val queryRev = MongoDBObject ("_id" -> new ObjectId(id),"voters." + fb_user -> directionRev)
+      val queryObj = MongoDBObject ("_id" -> new ObjectId(id))
+      
+      val count = database.count(query)
+      val countRev = database.count(queryRev)
+      Text(count.toString + ":" + countRev.toString)
+
+      var update : DBObject = null
+      if (count == 0 && countRev == 0) //forward
+	update = MongoDBObject("$inc" -> MongoDBObject("votes" -> dirAmount), "$push" -> MongoDBObject("voters" -> MongoDBObject(fb_user -> direction)))
+      else if (count == 0 && countRev == 1) //zero out
+	update = MongoDBObject("$inc" -> MongoDBObject("votes" -> dirAmount), "$pull" -> MongoDBObject("voters" -> MongoDBObject(fb_user -> directionRev)))
+      else { //invalid
+	Redirect("/submission/" + id + "?response=yes")
+      }
+      
+      if (update != null)
+      {
+	database.update(queryObj,update)
+	Redirect("/submission/" + id + "?response=" + direction)
+      }
+      else	
+      {
+	Text("fail: duplicate vote")
+      }
+      }
+      else {
+	Text("fail: no facebook user")
+      }
       //TODO: add response
-      //TODO: no facebook user fail
     }
     
     def submitGet = {
@@ -103,5 +133,4 @@ object Application extends Controller {
       val msgStrings : Iterator[DubStepJoke] = msgs.map ( (obj : DBObject ) => DubStepJoke(obj.getOrElse("msg",""),obj.getOrElse("_id","none"),obj.getOrElse("votes","0")))
       html.index("What does dubstep sound like?", msgStrings.toSeq(0),fb_user)
     }
-    
 }
