@@ -6,12 +6,13 @@
 @if(fb_user == null) {
 <fb:login-button>Login with Facebook</fb:login-button>
 } else {
-<p>Votes: @msg.votes</p>
+<p id="error"></p>
+<p id="votes">Votes: @msg.votes</p>
 <p id="name">@fb_user</p>
 <a href="#" onclick="FB.logout(function(){window.location='/'})">Logout</a>
 <a href="/submit">Add your own</a>
-<p><a href="/vote/up/@msg.id?fb_id=@fb_user">Vote up</a></p>
-<p><a href="/vote/down/@msg.id?fb_id=@fb_user">Vote down</a></p>
+<p><a href="javascript:vote('@msg.id','up')">Vote up</a></p>
+<p><a href="javascript:vote('@msg.id','down')">Vote down</a></p>
 }
 
 }

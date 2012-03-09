@@ -74,7 +74,7 @@ object Application extends Controller {
       
       val count = database.count(query)
       val countRev = database.count(queryRev)
-      Text(count.toString + ":" + countRev.toString)
+
 
       var update : DBObject = null
       if (count == 0 && countRev == 0) //forward
@@ -88,17 +88,16 @@ object Application extends Controller {
       if (update != null)
       {
 	database.update(queryObj,update)
-	Redirect("/submission/" + id + "?response=" + direction)
+	Text(database.find(queryObj).next.getOrElse("votes","Error"))
       }
       else	
       {
-	Text("fail: duplicate vote")
+	Error("Duplicate vote")
       }
       }
       else {
-	Text("fail: no facebook user")
+	Error("No facebook user")
       }
-      //TODO: add response
     }
     
     def submitGet = {
